@@ -1,0 +1,25 @@
+plugins {
+    id 'java-gradle-plugin'
+    id 'com.gradle.plugin-publish' version '0.10.1'
+}
+
+repositories {
+    mavenCentral()
+}
+
+pluginBundle {
+    website = 'https://protop.io'
+    vcsUrl = 'https://github.com/protop-io/protop-gradle-plugin.git'
+    tags = ['protop', 'protop-io', 'protocol buffer', 'protobuf', 'grpc']
+}
+
+gradlePlugin {
+    plugins {
+        protop {
+            id = 'protop.gradle.plugin.protop'
+            displayName = 'Protop Gradle plugin'
+            description = 'A simple plugin for plugin protop into a Gradle buildscript.'
+            implementationClass = 'protop.gradle.plugin.ProtopGradlePlugin'
+        }
+    }
+}
