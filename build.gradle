@@ -1,7 +1,13 @@
 plugins {
     id 'java-gradle-plugin'
-    id 'com.gradle.plugin-publish' version '0.10.1'
+    id 'com.gradle.plugin-publish' version '0.12.0'
+    id 'maven-publish'
 }
+
+group = 'io.protop'
+version = "0.1.1-SNAPSHOT"
+sourceCompatibility = JavaVersion.VERSION_1_9
+targetCompatibility = JavaVersion.VERSION_1_9
 
 repositories {
     mavenCentral()
@@ -10,16 +16,16 @@ repositories {
 pluginBundle {
     website = 'https://protop.io'
     vcsUrl = 'https://github.com/protop-io/protop-gradle-plugin.git'
-    tags = ['protop', 'protop-io', 'protocol buffer', 'protobuf', 'grpc']
+    tags = ['protop', 'protop-io', 'protocol-buffers', 'protobuf', 'grpc']
 }
 
 gradlePlugin {
     plugins {
-        protop {
-            id = 'protop.gradle.plugin.protop'
+        protopPlugin {
+            id = 'io.protop'
             displayName = 'Protop Gradle plugin'
-            description = 'A simple plugin for plugin protop into a Gradle buildscript.'
-            implementationClass = 'protop.gradle.plugin.ProtopGradlePlugin'
+            description = 'A simple plugin for using io.protop in Gradle projects.'
+            implementationClass = 'io.protop.gradle.plugin.ProtopGradlePlugin'
         }
     }
 }
