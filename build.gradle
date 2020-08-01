@@ -6,8 +6,8 @@ plugins {
 
 group = 'io.protop'
 version = "0.2.1-SNAPSHOT"
-sourceCompatibility = JavaVersion.VERSION_1_9
-targetCompatibility = JavaVersion.VERSION_1_9
+sourceCompatibility = JavaVersion.VERSION_14
+targetCompatibility = JavaVersion.VERSION_14
 
 repositories {
     mavenCentral()
