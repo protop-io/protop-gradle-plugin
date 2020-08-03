@@ -41,12 +41,25 @@ public class ProtopGradlePlugin implements Plugin<Project> {
         });
     }
 
-    private void protopSync(Exec exec, ProtopExtension extension) {
-        List<String> args = new ArrayList<>();
-        args.add("protop");
+    private void protopSync(final Exec exec, final ProtopExtension extension) {
+        final String protopHome = System.getenv("PROTOP_HOME");
+        final String protopPrefix = protopHome != null ?
+            protopHome + "/bin/"
+            : "";
+
+        final List<String> args = new ArrayList<>();
+
+        args.add(protopPrefix + "protop");
         args.add("sync");
-        if (extension.refreshGitSources) args.add("--git-refresh");
-        if (extension.useLinks) args.add("--use-links");
+
+        if (extension.refreshGitSources) {
+            args.add("--git-refresh");
+        }
+
+        if (extension.useLinks) {
+            args.add("--use-links");
+        }
+
         exec.commandLine(args);
     }
 }
