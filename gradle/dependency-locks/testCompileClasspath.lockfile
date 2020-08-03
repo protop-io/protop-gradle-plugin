@@ -1,9 +1,27 @@
 # This is a Gradle generated file for dependency locking.
 # Manual edits can break the build and are not advised.
 # This file is expected to be part of source control.
+aopalliance:aopalliance:1.0
+com.google.gradle:osdetector-gradle-plugin:1.4.0
+com.google.guava:guava:18.0
+com.google.protobuf:protobuf-gradle-plugin:0.8.10
+commons-lang:commons-lang:2.6
+javax.annotation:jsr250-api:1.0
+javax.enterprise:cdi-api:1.0
+javax.inject:javax.inject:1
+kr.motd.maven:os-maven-plugin:1.4.0.Final
+org.apache.maven:maven-artifact:3.2.1
+org.apache.maven:maven-model:3.2.1
+org.apache.maven:maven-plugin-api:3.2.1
 org.apiguardian:apiguardian-api:1.1.0
 org.assertj:assertj-core:3.16.1
+org.codehaus.plexus:plexus-classworlds:2.4
+org.codehaus.plexus:plexus-component-annotations:1.5.5
+org.codehaus.plexus:plexus-utils:3.0.17
+org.eclipse.sisu:org.eclipse.sisu.inject:0.0.0.M5
+org.eclipse.sisu:org.eclipse.sisu.plexus:0.0.0.M5
 org.junit.jupiter:junit-jupiter-api:5.7.0-M1
 org.junit.platform:junit-platform-commons:1.7.0-M1
 org.junit:junit-bom:5.7.0-M1
 org.opentest4j:opentest4j:1.2.0
+org.sonatype.sisu:sisu-guice:3.1.0
