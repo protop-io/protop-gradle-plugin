@@ -22,6 +22,14 @@ class ProtopGradlePlugin implements Plugin<Project> {
                         }
                     }
                 }
+
+                sourceSets {
+                    main {
+                        proto {
+                            srcDirs += protop.path
+                        }
+                    }
+                }
             }
         }
 

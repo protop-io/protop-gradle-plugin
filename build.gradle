@@ -67,15 +67,14 @@ compileFunctionalTestJava {
 }
 
 functionalTest {
-    final protopHome = System.getenv("PROTOP_HOME") ?: ''
+    // TODO(noel-yap): Install `protop` executable local to the test if `PROTOP_HOME` is not defined.
+    onlyIf {
+        System.getenv('PROTOP_HOME') != null
+    }
+
+    final protopHome = System.getenv('PROTOP_HOME') ?: ''
 
     jvmArgs += ['--enable-preview']
 
     environment "PROTOP_HOME", protopHome
-
-    doFirst {
-        if (protopHome.isEmpty() || !new File(protopHome, "bin/protop").exists()) {
-            throw new GradleException("PROTOP_HOME must be defined such that `\${PROTOP_HOME}/bin/protop` exists.")
-        }
-    }
 }

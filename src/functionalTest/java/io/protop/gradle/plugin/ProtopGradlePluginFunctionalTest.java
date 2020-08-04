@@ -45,6 +45,12 @@ public class ProtopGradlePluginFunctionalTest {
           id 'io.protop' version '1.0.0'
           id 'java'
         }
+        
+        task assertMainProtoSrcDirsIncludesProtopPath {
+          doLast {
+            assert sourceSets.main.proto.srcDirs.contains(file("${rootDir}/${protop.path}"))
+          }
+        }
         """);
   }
 
@@ -54,7 +60,7 @@ public class ProtopGradlePluginFunctionalTest {
     final BuildResult buildResult = gradleRunner
         .withPluginClasspath()
         .withProjectDir(rootDir.toFile())
-        .withArguments("--info", "--stacktrace", "protopSync")
+        .withArguments("--info", "--stacktrace", ":protopSync")
         .build();
 
     softly.assertThat(buildResult.getOutput())
@@ -73,10 +79,23 @@ public class ProtopGradlePluginFunctionalTest {
     final BuildResult buildResult = gradleRunner
         .withPluginClasspath()
         .withProjectDir(rootDir.toFile())
-        .withArguments("--dry-run", "--info", "--stacktrace", "generateProto")
+        .withArguments("--dry-run", "--info", "--stacktrace", ":generateProto")
         .build();
 
     assertThat(buildResult.getOutput())
         .contains(":protopSync SKIPPED");
+  }
+
+  @Test
+  @DisplayName("`sourceSets.main.proto.srcDirs` should include `protop.path`.")
+  public void sourceSetsMainProtoSrcDirsShouldIncludeProtopPath(final SoftAssertions softly) {
+    final BuildResult buildResult = gradleRunner
+        .withPluginClasspath()
+        .withProjectDir(rootDir.toFile())
+        .withArguments("--info", "--stacktrace", ":assertMainProtoSrcDirsIncludesProtopPath")
+        .build();
+
+    softly.assertThat(Objects.requireNonNull(buildResult.task(":assertMainProtoSrcDirsIncludesProtopPath")).getOutcome())
+        .isEqualByComparingTo(SUCCESS);
   }
 }
