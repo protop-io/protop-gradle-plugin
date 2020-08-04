@@ -4,6 +4,7 @@ import org.assertj.core.api.SoftAssertions;
 import org.assertj.core.api.junit.jupiter.SoftAssertionsExtension;
 import org.gradle.testkit.runner.BuildResult;
 import org.gradle.testkit.runner.GradleRunner;
+import org.gradle.testkit.runner.UnexpectedBuildFailure;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -15,22 +16,19 @@ import java.nio.file.Path;
 import java.util.Objects;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.gradle.testkit.runner.TaskOutcome.SUCCESS;
 
 @ExtendWith(SoftAssertionsExtension.class)
 public class ProtopGradlePluginFunctionalTest {
-  private GradleRunner gradleRunner;
-
   private Path rootDir;
 
   @BeforeEach
   public void beforeEach(@TempDir final Path rootDir) throws Exception {
-    this.gradleRunner = GradleRunner.create();
-
     this.rootDir = rootDir;
-    final Path protopJson = rootDir.resolve("protop.json");
 
     // TODO(noel-yap): When `protop` supports `file` schema, replace with test data to improve test focus and locality.
+    final Path protopJson = rootDir.resolve("protop.json");
     Files.writeString(protopJson, """
         {
           "dependencies": {
@@ -42,6 +40,44 @@ public class ProtopGradlePluginFunctionalTest {
     final Path buildGradle = rootDir.resolve("build.gradle");
     Files.writeString(buildGradle, """
         plugins {
+          id 'com.google.protobuf' version '0.8.+'
+          id 'io.protop' version '1.0.0'
+          id 'java'
+        }
+        """);
+  }
+
+  @Test
+  @DisplayName("Should sync proto files.")
+  public void shouldSyncProtoFiles(final SoftAssertions softly) {
+    final BuildResult buildResult = gradle("--info", "--stacktrace", ":protopSync");
+
+    softly.assertThat(Objects.requireNonNull(buildResult.task(":protopSync")).getOutcome())
+        .isEqualByComparingTo(SUCCESS);
+    softly.assertThat(buildResult.getOutput())
+        .contains("""
+            Syncing external dependencies.
+            Done syncing.
+            Protop sync succeeded
+            """);
+  }
+
+  @Test
+  @DisplayName("`generateProto` task should depend on `protoSync`.")
+  public void generateProtoTaskShouldIncludeProtoSync() {
+    final BuildResult buildResult = gradle("--dry-run", "--info", "--stacktrace", ":generateProto");
+
+    assertThat(buildResult.getOutput())
+        .contains(":protopSync SKIPPED");
+  }
+
+  @Test
+  @DisplayName("`sourceSets.main.proto.srcDirs` should include `protop.path`.")
+  public void sourceSetsMainProtoSrcDirsShouldIncludeProtopPath() throws Exception {
+    final Path buildGradle = rootDir.resolve("build.gradle");
+    Files.writeString(buildGradle, """
+        plugins {
+          id 'com.google.protobuf' version '0.8.+'
           id 'io.protop' version '1.0.0'
           id 'java'
         }
@@ -52,50 +88,37 @@ public class ProtopGradlePluginFunctionalTest {
           }
         }
         """);
-  }
 
-  @Test
-  @DisplayName("Should sync proto files.")
-  public void shouldSyncProtoFiles(final SoftAssertions softly) {
-    final BuildResult buildResult = gradleRunner
-        .withPluginClasspath()
-        .withProjectDir(rootDir.toFile())
-        .withArguments("--info", "--stacktrace", ":protopSync")
-        .build();
+    final BuildResult buildResult = gradle("--info", "--stacktrace", ":assertMainProtoSrcDirsIncludesProtopPath");
 
-    softly.assertThat(buildResult.getOutput())
-        .contains("""
-            Syncing external dependencies.
-            Done syncing.
-            Protop sync succeeded
-            """);
-    softly.assertThat(Objects.requireNonNull(buildResult.task(":protopSync")).getOutcome())
+    assertThat(Objects.requireNonNull(buildResult.task(":assertMainProtoSrcDirsIncludesProtopPath")).getOutcome())
         .isEqualByComparingTo(SUCCESS);
   }
 
   @Test
-  @DisplayName("`generateProto` task should depend on `protoSync`.")
-  public void generateProtoTaskShouldIncludeProtoSync() {
-    final BuildResult buildResult = gradleRunner
-        .withPluginClasspath()
-        .withProjectDir(rootDir.toFile())
-        .withArguments("--dry-run", "--info", "--stacktrace", ":generateProto")
-        .build();
+  @DisplayName("Build should fail with actionable error if `protobuf` Gradle plugin isn't applied.")
+  public void buildShouldFailWithActionableErrorIfProtobufGradlePluginIsnTApplied()
+      throws Exception {
+    final Path buildGradle = rootDir.resolve("build.gradle");
+    Files.writeString(buildGradle, """
+        plugins {
+          id 'io.protop' version '1.0.0'
+          id 'java'
+        }
+        """);
 
-    assertThat(buildResult.getOutput())
-        .contains(":protopSync SKIPPED");
+    assertThatThrownBy(() -> gradle("--info", "--stacktrace", "tasks"))
+        .isInstanceOf(UnexpectedBuildFailure.class)
+        .hasMessageContaining("`io.protop` Gradle plugin needs project to apply `com.google.protobuf` Gradle plugin.");
   }
 
-  @Test
-  @DisplayName("`sourceSets.main.proto.srcDirs` should include `protop.path`.")
-  public void sourceSetsMainProtoSrcDirsShouldIncludeProtopPath(final SoftAssertions softly) {
-    final BuildResult buildResult = gradleRunner
+  private BuildResult gradle(final String... args) {
+    final GradleRunner gradleRunner = GradleRunner.create();
+
+    return gradleRunner
         .withPluginClasspath()
         .withProjectDir(rootDir.toFile())
-        .withArguments("--info", "--stacktrace", ":assertMainProtoSrcDirsIncludesProtopPath")
+        .withArguments(args)
         .build();
-
-    softly.assertThat(Objects.requireNonNull(buildResult.task(":assertMainProtoSrcDirsIncludesProtopPath")).getOutcome())
-        .isEqualByComparingTo(SUCCESS);
   }
 }

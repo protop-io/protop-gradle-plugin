@@ -1,5 +1,6 @@
 package io.protop.gradle.plugin
 
+import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.tasks.Delete
@@ -12,23 +13,27 @@ class ProtopGradlePlugin implements Plugin<Project> {
     @Override
     void apply(final Project project) {
         project.with {
-            plugins.apply('com.google.protobuf')
-
             afterEvaluate {
-                protobuf {
-                    generateProtoTasks {
-                        all().each { task ->
-                            task.dependsOn { protopSync }
+                try {
+                    protobuf {
+                        generateProtoTasks {
+                            all().each { task ->
+                                task.dependsOn { protopSync }
+                            }
                         }
                     }
-                }
 
-                sourceSets {
-                    main {
-                        proto {
-                            srcDirs += protop.path
+                    sourceSets {
+                        main {
+                            proto {
+                                srcDirs += protop.path
+                            }
                         }
                     }
+                } catch (final Exception e) {
+                    throw e.getMessage().contains("Could not find method protobuf()")
+                            ? new GradleException('`io.protop` Gradle plugin needs project to apply `com.google.protobuf` Gradle plugin.')
+                            : e
                 }
             }
         }
