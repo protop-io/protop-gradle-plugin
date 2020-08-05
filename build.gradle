@@ -1,16 +1,40 @@
 plugins {
-    id 'java-gradle-plugin'
     id 'com.gradle.plugin-publish' version '0.12.0'
+    id 'groovy'
+    id 'java-gradle-plugin'
     id 'maven-publish'
+    id 'nebula.facet' version '7.0.9'
 }
 
+apply from: 'functional-test.gradle'
+
 group = 'io.protop'
-version = "1.0.0"
-sourceCompatibility = JavaVersion.VERSION_13
-targetCompatibility = JavaVersion.VERSION_13
+version = '1.0.0'
+sourceCompatibility = JavaVersion.VERSION_14
+targetCompatibility = JavaVersion.VERSION_14
 
 repositories {
     mavenCentral()
+}
+
+configurations.all {
+    resolutionStrategy.activateDependencyLocking()
+}
+
+dependencies {
+    implementation gradleApi()
+    implementation localGroovy()
+    implementation 'com.google.protobuf:protobuf-gradle-plugin:0.8.+'
+
+    testImplementation gradleTestKit()
+    testImplementation 'org.assertj:assertj-core:3.+'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.+'
+
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.+'
+}
+
+dependencyLocking {
+    lockMode = LockMode.STRICT
 }
 
 pluginBundle {
@@ -28,4 +52,8 @@ gradlePlugin {
             implementationClass = 'io.protop.gradle.plugin.ProtopGradlePlugin'
         }
     }
+}
+
+tasks.withType(Test) {
+    useJUnitPlatform()
 }

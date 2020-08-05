@@ -1,0 +1,3 @@
+[submodule "protop"]
+	path = protop
+	url = https://github.com/protop-io/protop.git
