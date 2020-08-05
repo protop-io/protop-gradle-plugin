@@ -6,8 +6,10 @@ plugins {
     id 'nebula.facet' version '7.0.9'
 }
 
+apply from: 'functional-test.gradle'
+
 group = 'io.protop'
-version = "1.0.0"
+version = '1.0.0'
 sourceCompatibility = JavaVersion.VERSION_14
 targetCompatibility = JavaVersion.VERSION_14
 
@@ -52,29 +54,6 @@ gradlePlugin {
     }
 }
 
-facets {
-    functionalTest {
-        parentSourceSet = 'test'
-    }
-}
-
 tasks.withType(Test) {
     useJUnitPlatform()
-}
-
-compileFunctionalTestJava {
-    options.compilerArgs += ['--enable-preview']
-}
-
-functionalTest {
-    // TODO(noel-yap): Install `protop` executable local to the test if `PROTOP_HOME` is not defined.
-    onlyIf {
-        System.getenv('PROTOP_HOME') != null
-    }
-
-    final protopHome = System.getenv('PROTOP_HOME') ?: ''
-
-    jvmArgs += ['--enable-preview']
-
-    environment "PROTOP_HOME", protopHome
 }
