@@ -31,32 +31,6 @@ protop {
 }
 ```
 
-Add the protop path to your sources. Without this plugin, you'd do the same but
-with the raw path. Here, the plugin provides that value as a variable:
-
-```groovy
-sourceSets {
-    main {
-        proto {
-            srcDirs += protop.path
-        }
-    }
-}
-```
-
-Finally, have the [Protobuf plugin](https://github.com/google/protobuf-gradle-plugin) depend on the `protopSync` task:
-
-```groovy
-protobuf {
-    // ...
-    generateProtoTasks {
-        all().each { task ->
-            task.dependsOn { protopSync }
-        }
-    }
-}
-```
-
 ## Examples
 
 [Simple "numbers" service](https://github.com/protop-io/numbers-service)
