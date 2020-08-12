@@ -9,12 +9,16 @@ compileFunctionalTestJava {
 }
 
 final envProtopHome = System.getenv('PROTOP_HOME')
-final defaultProtopHome = "${buildDir}/protop" as String
+final defaultProtopHome = "${rootDir}/protop/build" as String
 final protopHome = envProtopHome ?: defaultProtopHome
 final shouldUseLocalProtopExecutable = (protopHome == defaultProtopHome)
 
 functionalTest {
-  dependsOn ':createProtopExecutable'
+  final protopSubmodule = gradle.includedBuild('protop')
+
+  if (shouldUseLocalProtopExecutable) {
+    dependsOn protopSubmodule.task(':executable')
+  }
 
   jvmArgs += ['--enable-preview']
 
@@ -25,35 +29,5 @@ functionalTest {
         (shouldUseLocalProtopExecutable
             ? '  Set `PROTOP_HOME` to override.'
             : '')
-  }
-}
-
-task createProtopExecutable {
-  final protopSubmodule = gradle.includedBuild('protop')
-
-  onlyIf {
-    shouldUseLocalProtopExecutable
-  }
-
-  if (shouldUseLocalProtopExecutable) {
-    dependsOn protopSubmodule.task(':distFatJar')
-  }
-
-  final outputFile = file("${defaultProtopHome}/bin/protop")
-
-  inputs.files file("${protopSubmodule.projectDir}/build/libs/protop.jar")
-  outputs.file outputFile
-
-  doFirst {
-    mkdir outputFile.getParent()
-  }
-
-  doLast {
-    outputFile.text = '#!/bin/bash\n'
-    outputFile.append('exec java -jar "$0" "$@"\n')
-    outputFile.append(inputs.files.first().readBytes())
-    outputFile.setExecutable(true)
-
-    println "`:createProtopExecutable` built ${[outputFile, '-v'].execute().text}"
   }
 }
